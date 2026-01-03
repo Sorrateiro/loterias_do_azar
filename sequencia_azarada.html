@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loteria - Sequência Azarada</title>
+    <style>
+        body {
+            font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+            max-width: 800px;
+            font-size: 14px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(to right, #531100, #000000);
+        }
+        .caixote {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .apostador {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        .apostador h3 {
+            margin-top: 0;
+            color: #555;
+        }
+        input {
+            width: 60px;
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .resultado {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e8f4f8;
+            border-left: 4px solid #007bff;
+            font-weight: bold;
+        }
+        .all-results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="caixote">
+        <h1>🎰 Loteria - Sequência Azarada</h1>
+        <p style="text-align: center; color: #666;">Escolha 6 números de 0 a 60. Você pode ser o próximo ganhador!</p>
+        
+        <div id="apostadores"></div>
+        
+        <button onclick="GerarResultados()">🎲 Gerar Resultado</button>
+        
+        <div class="all-results" id="allResults"></div>
+    </div>
+
+    <script>
+        const NUM_APOSTADORES = 10;
+        const NUM_DEZENAS = 6;
+        const MAX_NUMERO = 60;
+        const apostas = [];
+
+        // Inicializar apostadores
+        function InicializarApostadores() {
+            const container = document.getElementById('apostadores');
+            container.innerHTML = '';
+
+            for (let i = 1; i <= NUM_APOSTADORES; i++) {
+                apostas[i - 1] = [];
+                
+                const div = document.createElement('div');
+                div.className = 'apostador';
+                div.innerHTML = `
+                    <h3>Apostador ${i}</h3>
+                    <div id="inputs-${i}"></div>
+                `;
+                container.appendChild(div);
+
+                const inputsDiv = document.getElementById(`inputs-${i}`);
+                for (let j = 0; j < NUM_DEZENAS; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = '0';
+                    input.max = MAX_NUMERO;
+                    input.placeholder = `Nº ${j + 1}`;
+                    input.onchange = (e) => {
+                        let valor = parseInt(e.target.value) || 0;
+                        if (valor > MAX_NUMERO) valor = MAX_NUMERO;
+                        e.target.value = valor;
+                        apostas[i - 1][j] = valor;
+                    };
+                    inputsDiv.appendChild(input);
+                }
+            }
+        }
+
+        function GerarSequenciaAleatoria() {
+            const numeros = new Set();
+            while (numeros.size < NUM_DEZENAS) {
+                numeros.add(Math.floor(Math.random() * (MAX_NUMERO + 1)));
+            }
+            return Array.from(numeros).sort((a, b) => a - b);
+        }
+
+        function GerarResultados() {
+            const resultado = GerarSequenciaAleatoria();
+            const resultsDiv = document.getElementById('allResults');
+            
+            let html = `<h2>🎯 Resultado: [${resultado.join(', ')}]</h2>`;
+
+            for (let i = 0; i < NUM_APOSTADORES; i++) {
+                const aposta = apostas[i].filter(n => n !== 0 || apostas[i].length === 0);
+                const acertos = aposta.filter(n => resultado.includes(n)).length;
+                
+                html += `<div class="resultado">
+                    <strong>Apostador ${i + 1}:</strong> [${aposta.join(', ') || 'Sem aposta'}] - 
+                    ${acertos} acerto(s)
+                </div>`;
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Inicializar na carga da página
+        window.onload = InicializarApostadores;
+    </script>
+</body>
+</html>
